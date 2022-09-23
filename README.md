@@ -1,5 +1,5 @@
 # Minesweeper
-Implementation of Minesweeper game with C# and SMFL.Net.
+Implementation of Minesweeper game with C# and [SMFL.Net](https://www.sfml-dev.org/download/sfml.net/).
 
 **NOTE:** The UI code I got from this repo https://github.com/gurb/Minesweeper-Clone
 
