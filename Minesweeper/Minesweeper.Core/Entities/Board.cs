@@ -26,7 +26,7 @@ namespace Minesweeper.Core.Entities
         public ICollection<Cell> CellBombs { get; private set; }
         public int NumberOfExposedCells { get; private set; }
         public Dictionary<Vector2f, Cell> CellsDictionary { get; private set; }
-    private int NumberOfCells => BoardSize * BoardSize;
+        private int NumberOfCells => BoardSize * BoardSize;
 
         public void InitializeBoard()
         {
@@ -35,6 +35,9 @@ namespace Minesweeper.Core.Entities
             CreateDictionary();
         }
 
+        /// <summary>
+        /// Instatiate the cells and place the bombs randomly
+        /// </summary>
         private void PlaceBombs()
         {
             // Place bombs on the first N cells, where N is the value of the property NumberOfBombs
@@ -81,6 +84,9 @@ namespace Minesweeper.Core.Entities
             }
         }
 
+        /// <summary>
+        /// Iterates through the bomb cells and sets the number of bombs in their neighbors
+        /// </summary>
         private void SetNumberedCells()
         {
             foreach (var cellWithBomb in CellBombs)
@@ -126,6 +132,11 @@ namespace Minesweeper.Core.Entities
             return cells.ToString();
         }
 
+        /// <summary>
+        /// Handles each play by seeing if the game is still valid to continue, if the player lost or won and flag a cell as a guess
+        /// </summary>
+        /// <param name="userPlay"></param>
+        /// <returns></returns>
         public UserPlayResult Play(UserPlay userPlay)
         {
             Cell cell = Cells[userPlay.Row, userPlay.Column];
@@ -137,8 +148,8 @@ namespace Minesweeper.Core.Entities
             }
             else
             {
+                InclementNumberOfExposedCells(cell);
                 cell.MarkAsExposed();
-                NumberOfExposedCells++;
 
                 switch (cell.CellType)
                 {
@@ -159,14 +170,18 @@ namespace Minesweeper.Core.Entities
             }
         }
 
+        /// <summary>
+        /// Expose blank cells until reach numbered cells
+        /// </summary>
+        /// <param name="cell"></param>
         public void ExpandBlankRegion(Cell cell)
         {
-            Queue<Cell> toExplore = new();
-            toExplore.Enqueue(cell);
+            Queue<Cell> queueOfCellstoExplore = new();
+            queueOfCellstoExplore.Enqueue(cell);
 
-            while (toExplore.Count > 0)
+            while (queueOfCellstoExplore.Count > 0)
             {
-                Cell current = toExplore.Dequeue();
+                Cell current = queueOfCellstoExplore.Dequeue();
 
                 foreach (var (rowDisplacement, columnDisplacement) in NeighboorsPosition.NeighboorsDisplacement)
                 {
@@ -177,16 +192,13 @@ namespace Minesweeper.Core.Entities
                     {
                         Cell neighboor = Cells[neighboorRow, neighboorColumn];
 
+                        //If is a blank cell adds it to the queue of cells to be expanded
                         if (neighboor.CellType == CellTypeEnum.Blank && !neighboor.IsExposed)
                         {
-                            toExplore.Enqueue(neighboor);
+                            queueOfCellstoExplore.Enqueue(neighboor);
                         }
 
-                        if (!neighboor.IsExposed)
-                        {
-                            NumberOfExposedCells++;
-                        }
-
+                        InclementNumberOfExposedCells(neighboor);
                         neighboor.MarkAsExposed();
                     }
                 }
@@ -203,8 +215,16 @@ namespace Minesweeper.Core.Entities
                 if (cell != null && !cell.IsExposed)
                 {
                     cell.MarkAsExposed();
-                }                
+                }
             }
+        }
+
+        private void InclementNumberOfExposedCells(Cell cell)
+        {
+            if (cell.IsExposed)
+                return;
+
+            NumberOfExposedCells++;
         }
     }
 }

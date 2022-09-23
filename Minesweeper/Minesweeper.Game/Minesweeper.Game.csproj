@@ -9,7 +9,10 @@
 
   <ItemGroup>
     <None Remove="Assets\game-over.png" />
+    <None Remove="Assets\gaming_SpriteSheet.png" />
+    <None Remove="Assets\losing-sound.wav" />
     <None Remove="Assets\tileset.png" />
+    <None Remove="Assets\winning-sound.wav" />
     <None Remove="Assets\you-won.png" />
   </ItemGroup>
 
@@ -17,7 +20,16 @@
     <Content Include="Assets\game-over.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\gaming_SpriteSheet.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\losing-sound.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\tileset.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\winning-sound.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\you-won.png">

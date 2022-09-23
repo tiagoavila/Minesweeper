@@ -3,7 +3,7 @@ using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
-VideoMode mode = new(GameConstants.WIDTH, GameConstants.HEIGHT);
+VideoMode mode = new(GameConstants.WINDOW_WIDTH, GameConstants.WINDOW_HEIGHT);
 RenderWindow window = new(mode, GameConstants.TITLE);
 Game game = new();
 

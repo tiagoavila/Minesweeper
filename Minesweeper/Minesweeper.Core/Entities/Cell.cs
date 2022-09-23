@@ -30,10 +30,9 @@ namespace Minesweeper.Core
         // ui
         public Vector2f CellKey { get; private set; }
         public Vector2f Position { get; private set; }
-        public RectangleShape uiBox;
+        public RectangleShape UIBox { get; private set; }
         public Texture Texture { get; private set; }
-        public int type;
-        public IntRect rect;
+        public IntRect Rect { get; private set; }
 
         public void SetIsBomb()
         {
@@ -51,13 +50,13 @@ namespace Minesweeper.Core
 
         public void RenderUiBox()
         {
-            uiBox = new RectangleShape(new Vector2f(CELL_SIZE, CELL_SIZE))
+            UIBox = new RectangleShape(new Vector2f(CELL_SIZE, CELL_SIZE))
             {
                 Texture = Texture,
                 Position = Position,
                 TextureRect = CreateTextureRect()
             };
-            rect = new IntRect(160 + (int)Position.X, 80 + (int)Position.Y, CELL_SIZE, CELL_SIZE);
+            Rect = new IntRect(160 + (int)Position.X, 80 + (int)Position.Y, CELL_SIZE, CELL_SIZE);
         }
 
         private IntRect CreateTextureRect()
@@ -68,13 +67,13 @@ namespace Minesweeper.Core
         public void MarkAsExposed()
         {
             IsExposed = true;
-            uiBox.TextureRect = CreateTextureRect();
+            UIBox.TextureRect = CreateTextureRect();
         }
 
         public void MarkAsGuess()
         {
             IsGuess = !IsGuess;
-            uiBox.TextureRect = CreateTextureRect();
+            UIBox.TextureRect = CreateTextureRect();
         }
 
         public void IncreaseNumberOfSurroudingBombs()
@@ -108,7 +107,7 @@ namespace Minesweeper.Core
             _ => string.Empty
         };
 
-        public int GetCellNumberForUIRender()
+        private int GetCellNumberForUIRender()
         {
             if (!IsExposed && IsGuess)
                 return 11;

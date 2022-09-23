@@ -1,6 +1,6 @@
 ﻿namespace Minesweeper.Core.ValueObjects
 {
-    public class NeighboorsPosition
+    public static class NeighboorsPosition
     {
         public static readonly (int rowDisplacement, int columnDisplacement)[] NeighboorsDisplacement =
             new[] {
