@@ -24,7 +24,7 @@ namespace Minesweeper.Game
 
         public Game()
         {
-            Texture texture = new("Assets/tileset.png");
+            Texture texture = new("Assets/gaming_SpriteSheet.png");
 
             _board = new Board(GameConstants.BOARD_SIZE, GameConstants.NUMBER_OF_BOMBS, texture);
             _board.InitializeBoard();
@@ -34,14 +34,14 @@ namespace Minesweeper.Game
                 Position = new Vector2f(GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2, GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2)
             };
 
-            _gameOver = new Sprite(new Texture("Assets/game-over.png"))
+            _gameOver = new Sprite(new Texture("Assets/game-over.jpg"))
             {
-                Position = new Vector2f(0, 160 - 25)
+                Position = new Vector2f(120, 200)
             };
 
-            _youWon = new Sprite(new Texture("Assets/you-won.png"))
+            _youWon = new Sprite(new Texture("Assets/you-win.jpg"))
             {
-                Position = new Vector2f(0, 160 - 25)
+                Position = new Vector2f(120, 140)
             };
 
             _losingMusicPlayer = new Music("Assets/losing-sound.wav")
@@ -92,6 +92,7 @@ namespace Minesweeper.Game
                         if (userPlayResult.ResultingGameState == Core.Enums.GameStateEnum.Won)
                         {
                             isWon = true;
+                            _board.ExposeAllCells();
                             _winningMusicPlayer.Play();
                         }
                     }

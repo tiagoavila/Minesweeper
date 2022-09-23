@@ -8,16 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\game-over.jpg" />
     <None Remove="Assets\game-over.png" />
     <None Remove="Assets\gaming_SpriteSheet.png" />
     <None Remove="Assets\losing-sound.wav" />
     <None Remove="Assets\tileset.png" />
     <None Remove="Assets\winning-sound.wav" />
-    <None Remove="Assets\you-won.png" />
+    <None Remove="Assets\you-win.jpg" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Assets\game-over.png">
+    <Content Include="Assets\game-over.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\gaming_SpriteSheet.png">
@@ -32,7 +33,7 @@
     <Content Include="Assets\winning-sound.wav">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Assets\you-won.png">
+    <Content Include="Assets\you-win.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

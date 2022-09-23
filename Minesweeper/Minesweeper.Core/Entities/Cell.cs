@@ -7,8 +7,8 @@ namespace Minesweeper.Core
 {
     public class Cell
     {
-        public const int CELL_SIZE = 16;
-        public const int RECTANGLE_SIZE = 10;
+        public const int CELL_SIZE = 32;
+        public const int RECTANGLE_SIZE = 32;
 
         public Cell(int row, int column, Texture? texture)
         {
@@ -56,12 +56,17 @@ namespace Minesweeper.Core
                 Position = Position,
                 TextureRect = CreateTextureRect()
             };
-            Rect = new IntRect(160 + (int)Position.X, 80 + (int)Position.Y, CELL_SIZE, CELL_SIZE);
+
+            int leftPadding = 100; //This is the result of: GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2;
+            int topPadding = 40; //This is the result of: GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2;
+
+            Rect = new IntRect(leftPadding + (int)Position.X, topPadding + (int)Position.Y, CELL_SIZE, CELL_SIZE);
         }
 
         private IntRect CreateTextureRect()
         {
-            return new IntRect(GetCellNumberForUIRender() * 10, 0, RECTANGLE_SIZE, RECTANGLE_SIZE);
+            (int left, int top) = GetLeftAndTopForUIRender();
+            return new IntRect(left, top, RECTANGLE_SIZE, RECTANGLE_SIZE);
         }
 
         public void MarkAsExposed()
@@ -121,6 +126,25 @@ namespace Minesweeper.Core
                 CellTypeEnum.Number => NumberOfSurroudingBombs,
                 CellTypeEnum.Bomb => 10,
                 _ => 0
+            };
+        }
+
+        private (int left, int top) GetLeftAndTopForUIRender()
+        {
+            if (!IsExposed && IsGuess)
+                return (96, 64);
+
+            if (!IsExposed)
+                return (32, 64);
+
+            int top = Math.DivRem(NumberOfSurroudingBombs, 4, out int left);
+
+            return CellType switch
+            {
+                CellTypeEnum.Blank => (0, 0),
+                CellTypeEnum.Number => (left * 32, top * 32),
+                CellTypeEnum.Bomb => (64, 64),
+                _ => (32, 64)
             };
         }
 
