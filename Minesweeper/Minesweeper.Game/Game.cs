@@ -3,18 +3,21 @@ using Minesweeper.Core.Entities;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
+using System.Data.Common;
 
 namespace Minesweeper.Game
 {
     public class Game
     {
-        private readonly Board _board;
+        private readonly Board _boardEngine;
         private readonly Sprite _boardUI;
-        private readonly Sprite _gameOver;
-        private readonly Sprite _youWon;
+        private readonly Sprite _gameOverMessage;
+        private readonly Sprite _youWonMessage;
         private readonly RenderTexture renderTexture = new(GameConstants.BOARD_WIDTH, GameConstants.BOARD_HEIGHT);
         private readonly Music _losingMusicPlayer;
         private readonly Music _winningMusicPlayer;
+        readonly int _leftPadding = GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2; //Spacing from the left of the window
+        readonly int _topPadding = GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2; //Spacing from the top of the window
 
         private bool isWon;
         private bool isLose;
@@ -26,20 +29,20 @@ namespace Minesweeper.Game
         {
             Texture texture = new("Assets/gaming_SpriteSheet.png");
 
-            _board = new Board(GameConstants.BOARD_SIZE, GameConstants.NUMBER_OF_BOMBS, texture);
-            _board.InitializeBoard();
+            _boardEngine = new Board(GameConstants.BOARD_SIZE, GameConstants.NUMBER_OF_BOMBS, texture);
+            _boardEngine.InitializeBoard();
 
             _boardUI = new Sprite(renderTexture.Texture)
             {
-                Position = new Vector2f(GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2, GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2)
+                Position = new Vector2f(_leftPadding, _topPadding)
             };
 
-            _gameOver = new Sprite(new Texture("Assets/game-over.jpg"))
+            _gameOverMessage = new Sprite(new Texture("Assets/game-over.jpg"))
             {
                 Position = new Vector2f(120, 200)
             };
 
-            _youWon = new Sprite(new Texture("Assets/you-win.jpg"))
+            _youWonMessage = new Sprite(new Texture("Assets/you-win.jpg"))
             {
                 Position = new Vector2f(120, 140)
             };
@@ -59,19 +62,18 @@ namespace Minesweeper.Game
         {
             renderTexture.Clear();
 
-            foreach (var key in _board.CellsDictionary.Keys)
+            foreach (var key in _boardEngine.CellsDictionary.Keys)
             {
-                renderTexture.Draw(_board.CellsDictionary[key].UIBox);
+                renderTexture.Draw(_boardEngine.CellsDictionary[key].UIBox);
             }
 
             if (isLose)
             {
-                renderTexture.Draw(_gameOver);
-            }
-
-            if (isWon)
+                renderTexture.Draw(_gameOverMessage);
+            } 
+            else if (isWon)
             {
-                renderTexture.Draw(_youWon);
+                renderTexture.Draw(_youWonMessage);
             }
 
             renderTexture.Display();
@@ -80,45 +82,52 @@ namespace Minesweeper.Game
 
         public void Update(Vector2i mouseCoords)
         {
-            foreach (KeyValuePair<Vector2f, Cell> box in _board.CellsDictionary)
+            int row = Math.DivRem(mouseCoords.Y - _topPadding, 32, out int _);
+            int column = Math.DivRem(mouseCoords.X - _leftPadding, 32, out int _);
+
+            if (_boardEngine.CellsDictionary.TryGetValue((row, column), out Cell cell))
             {
-                if (LeftClick && box.Value.Rect.Contains(mouseCoords.X, mouseCoords.Y))
+                if (LeftClick)
                 {
-                    LeftClick = false;
-
-                    UserPlayResult userPlayResult = _board.Play(new UserPlay(box.Value.Row, box.Value.Column, false));
-                    if (userPlayResult != null && userPlayResult.IsSuccessful)
-                    {
-                        if (userPlayResult.ResultingGameState == Core.Enums.GameStateEnum.Won)
-                        {
-                            isWon = true;
-                            _board.ExposeAllCells();
-                            _winningMusicPlayer.Play();
-                        }
-                    }
-                    else
-                    {
-                        _board.ExposeAllCells();
-                        isLose = true;
-
-                        _losingMusicPlayer.Play();
-                    }
-
-                    break;
-                }
-
-                // set flag
-                if (RightClick && box.Value.Rect.Contains(mouseCoords.X, mouseCoords.Y))
+                    HandleLeftCLick(cell);
+                } 
+                else if (RightClick)
                 {
-                    RightClick = false;
-
-                    if (!box.Value.IsExposed)
-                    {
-                        _board.Play(new UserPlay(box.Value.Row, box.Value.Column, true));
-                    }
-
-                    break;
+                   HandleRightCLick(cell);
                 }
+            }
+        }
+
+        private void HandleLeftCLick(Cell cell)
+        {
+            LeftClick = false;
+
+            UserPlayResult userPlayResult = _boardEngine.Play(new UserPlay(cell.Row, cell.Column, false));
+            if (userPlayResult != null && userPlayResult.IsSuccessful)
+            {
+                if (userPlayResult.ResultingGameState == Core.Enums.GameStateEnum.Won)
+                {
+                    isWon = true;
+                    _boardEngine.ExposeAllCells();
+                    _winningMusicPlayer.Play();
+                }
+            }
+            else
+            {
+                _boardEngine.ExposeAllCells();
+                isLose = true;
+
+                _losingMusicPlayer.Play();
+            }
+        }
+
+        private void HandleRightCLick(Cell cell)
+        {
+            RightClick = false;
+
+            if (!cell.IsExposed)
+            {
+                _boardEngine.Play(new UserPlay(cell.Row, cell.Column, true));
             }
         }
     }

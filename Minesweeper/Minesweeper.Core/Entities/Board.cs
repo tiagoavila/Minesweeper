@@ -16,7 +16,7 @@ namespace Minesweeper.Core.Entities
             CellBombs = new List<Cell>(numberOfBombs);
             NumberOfExposedCells = 0;
             Texture = texture;
-            CellsDictionary = new Dictionary<Vector2f, Cell>();
+            CellsDictionary = new Dictionary<(int, int), Cell>();
         }
 
         public Texture Texture { get; private set; }
@@ -25,7 +25,7 @@ namespace Minesweeper.Core.Entities
         public Cell[,] Cells { get; private set; }
         public ICollection<Cell> CellBombs { get; private set; }
         public int NumberOfExposedCells { get; private set; }
-        public Dictionary<Vector2f, Cell> CellsDictionary { get; private set; }
+        public Dictionary<(int,int), Cell> CellsDictionary { get; private set; }
         private int NumberOfCells => BoardSize * BoardSize;
 
         public void InitializeBoard()
@@ -91,10 +91,10 @@ namespace Minesweeper.Core.Entities
         {
             foreach (var cellWithBomb in CellBombs)
             {
-                var neighboors = cellWithBomb.GetNeighboors(BoardSize, Cells);
-                foreach (var neighboor in neighboors)
+                var neighbors = cellWithBomb.GetNeighbors(BoardSize, Cells);
+                foreach (var neighbor in neighbors)
                 {
-                    neighboor.IncreaseNumberOfSurroudingBombs();
+                    neighbor.IncreaseNumberOfSurroudingBombs();
                 }
             }
         }
@@ -104,10 +104,10 @@ namespace Minesweeper.Core.Entities
             for (int index = 0; index < NumberOfCells; index++)
             {
                 int row = index / BoardSize;
-                int column1 = (index - row * BoardSize) % BoardSize;
-                Cell cell = Cells[row, column1];
+                int column = (index - row * BoardSize) % BoardSize;
+                Cell cell = Cells[row, column];
                 cell.RenderUiBox();
-                CellsDictionary.Add(cell.CellKey, cell);
+                CellsDictionary.Add((row, column), cell);
             }
         }
 
@@ -183,23 +183,23 @@ namespace Minesweeper.Core.Entities
             {
                 Cell current = queueOfCellstoExplore.Dequeue();
 
-                foreach (var (rowDisplacement, columnDisplacement) in NeighboorsPosition.NeighboorsDisplacement)
+                foreach (var (rowDisplacement, columnDisplacement) in NeighborsPosition.NeighborsDisplacement)
                 {
-                    int neighboorRow = current.Row + rowDisplacement;
-                    int neighboorColumn = current.Column + columnDisplacement;
+                    int neighborRow = current.Row + rowDisplacement;
+                    int neighborColumn = current.Column + columnDisplacement;
 
-                    if (Cell.IsNeighboorInBounds(BoardSize, neighboorRow, neighboorColumn))
+                    if (Cell.IsNeighborInBounds(BoardSize, neighborRow, neighborColumn))
                     {
-                        Cell neighboor = Cells[neighboorRow, neighboorColumn];
+                        Cell neighbor = Cells[neighborRow, neighborColumn];
 
                         //If is a blank cell adds it to the queue of cells to be expanded
-                        if (neighboor.CellType == CellTypeEnum.Blank && !neighboor.IsExposed)
+                        if (neighbor.CellType == CellTypeEnum.Blank && !neighbor.IsExposed)
                         {
-                            queueOfCellstoExplore.Enqueue(neighboor);
+                            queueOfCellstoExplore.Enqueue(neighbor);
                         }
 
-                        InclementNumberOfExposedCells(neighboor);
-                        neighboor.MarkAsExposed();
+                        InclementNumberOfExposedCells(neighbor);
+                        neighbor.MarkAsExposed();
                     }
                 }
             }

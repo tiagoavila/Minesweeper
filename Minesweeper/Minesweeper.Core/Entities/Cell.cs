@@ -86,22 +86,22 @@ namespace Minesweeper.Core
             NumberOfSurroudingBombs += 1;
         }
 
-        public IEnumerable<Cell> GetNeighboors(int boardSize, Cell[,] cells)
+        public IEnumerable<Cell> GetNeighbors(int boardSize, Cell[,] cells)
         {
-            List<Cell> neighboors = new(NeighboorsPosition.NeighboorsDisplacement.Length);
+            List<Cell> neighbors = new(NeighborsPosition.NeighborsDisplacement.Length);
 
-            foreach (var (rowDisplacement, columnDisplacement) in NeighboorsPosition.NeighboorsDisplacement)
+            foreach (var (rowDisplacement, columnDisplacement) in NeighborsPosition.NeighborsDisplacement)
             {
-                int neighboorRow = Row + rowDisplacement;
-                int neighboorColumn = Column + columnDisplacement;
+                int neighborRow = Row + rowDisplacement;
+                int neighborColumn = Column + columnDisplacement;
 
-                if (IsNeighboorInBounds(boardSize, neighboorRow, neighboorColumn))
+                if (IsNeighborInBounds(boardSize, neighborRow, neighborColumn))
                 {
-                    neighboors.Add(cells[neighboorRow, neighboorColumn]);
+                    neighbors.Add(cells[neighborRow, neighborColumn]);
                 }
             }
 
-            return neighboors;
+            return neighbors;
         }
 
         public string ToShortString() => CellType switch
@@ -112,23 +112,10 @@ namespace Minesweeper.Core
             _ => string.Empty
         };
 
-        private int GetCellNumberForUIRender()
-        {
-            if (!IsExposed && IsGuess)
-                return 11;
-
-            if (!IsExposed)
-                return 0;
-
-            return CellType switch
-            {
-                CellTypeEnum.Blank => 9,
-                CellTypeEnum.Number => NumberOfSurroudingBombs,
-                CellTypeEnum.Bomb => 10,
-                _ => 0
-            };
-        }
-
+        /// <summary>
+        /// Get the pixels from the top and left of the Asset image gaming_SpriteSheet.png to render the correct image for the type of cell
+        /// </summary>
+        /// <returns></returns>
         private (int left, int top) GetLeftAndTopForUIRender()
         {
             if (!IsExposed && IsGuess)
@@ -148,9 +135,16 @@ namespace Minesweeper.Core
             };
         }
 
-        public static bool IsNeighboorInBounds(int boardSize, int neighboorRow, int neighboorColumn)
+        /// <summary>
+        /// Check if a neighbor of a cell is inside the bounds of the 2D array
+        /// </summary>
+        /// <param name="boardSize"></param>
+        /// <param name="neighborRow"></param>
+        /// <param name="neighborColumn"></param>
+        /// <returns></returns>
+        public static bool IsNeighborInBounds(int boardSize, int neighborRow, int neighborColumn)
         {
-            return neighboorRow >= 0 && neighboorRow < boardSize && neighboorColumn >= 0 && neighboorColumn < boardSize;
+            return neighborRow >= 0 && neighborRow < boardSize && neighborColumn >= 0 && neighborColumn < boardSize;
         }
     }
 }
