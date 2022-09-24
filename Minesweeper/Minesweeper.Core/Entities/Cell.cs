@@ -15,7 +15,6 @@ namespace Minesweeper.Core
             Row = row;
             Column = column;
             Texture = texture;
-            CellKey = new Vector2f(Column, Row);
             Position = new Vector2f(Column * CELL_SIZE, Row * CELL_SIZE);
         }
 
@@ -28,7 +27,6 @@ namespace Minesweeper.Core
         public bool IsBomb { get; private set; }
 
         // ui
-        public Vector2f CellKey { get; private set; }
         public Vector2f Position { get; private set; }
         public RectangleShape UIBox { get; private set; }
         public Texture Texture { get; private set; }
@@ -44,7 +42,6 @@ namespace Minesweeper.Core
             Row = newRow;
             Column = newColumn;
 
-            CellKey = new Vector2f(Column, Row);
             Position = new Vector2f(Column * CELL_SIZE, Row * CELL_SIZE);
         }
 
