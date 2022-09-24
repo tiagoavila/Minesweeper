@@ -46,4 +46,8 @@
     <ProjectReference Include="..\Minesweeper.Core\Minesweeper.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Classes\" />
+  </ItemGroup>
+
 </Project>

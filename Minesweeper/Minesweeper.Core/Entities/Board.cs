@@ -26,7 +26,7 @@ namespace Minesweeper.Core.Entities
         public ICollection<Cell> CellBombs { get; private set; }
         public int NumberOfExposedCells { get; private set; }
         public Dictionary<(int,int), Cell> CellsDictionary { get; private set; }
-        private int NumberOfCells => BoardSize * BoardSize;
+        public int NumberOfCells => BoardSize * BoardSize;
 
         public void InitializeBoard()
         {
