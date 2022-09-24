@@ -1,38 +1,31 @@
 ﻿using Minesweeper.Core.Enums;
 using Minesweeper.Core.ValueObjects;
-using SFML.Graphics;
-using SFML.System;
 using System.Text;
 
 namespace Minesweeper.Core.Entities
 {
     public class Board
     {
-        public Board(int boardSize, int numberOfBombs, Texture texture)
+        public Board(int boardSize, int numberOfBombs)
         {
             BoardSize = boardSize;
             NumberOfBombs = numberOfBombs;
             Cells = new Cell[boardSize, boardSize];
             CellBombs = new List<Cell>(numberOfBombs);
             NumberOfExposedCells = 0;
-            Texture = texture;
-            CellsDictionary = new Dictionary<(int, int), Cell>();
         }
 
-        public Texture Texture { get; private set; }
         public int BoardSize { get; private set; }
         public int NumberOfBombs { get; private set; }
         public Cell[,] Cells { get; private set; }
         public ICollection<Cell> CellBombs { get; private set; }
         public int NumberOfExposedCells { get; private set; }
-        public Dictionary<(int,int), Cell> CellsDictionary { get; private set; }
         public int NumberOfCells => BoardSize * BoardSize;
 
         public void InitializeBoard()
         {
             PlaceBombs();
             SetNumberedCells();
-            CreateDictionary();
         }
 
         /// <summary>
@@ -46,7 +39,7 @@ namespace Minesweeper.Core.Entities
                 int row = index / BoardSize;
                 int column = (index - row * BoardSize) % BoardSize;
 
-                Cell cell = new(row, column, Texture);
+                Cell cell = new(row, column);
                 if (index < NumberOfBombs)
                 {
                     cell.SetIsBomb();
@@ -75,7 +68,7 @@ namespace Minesweeper.Core.Entities
                     Cell cell2 = Cells[row2, column2];
 
                     // Swap
-                    Cells[row1, column1] = cell2 ?? new Cell(row1, column1, Texture);
+                    Cells[row1, column1] = cell2 ?? new Cell(row1, column1);
                     cell2?.SetRowAndColumn(row1, column1);
 
                     Cells[row2, column2] = cell1;
@@ -96,18 +89,6 @@ namespace Minesweeper.Core.Entities
                 {
                     neighbor.IncreaseNumberOfSurroudingBombs();
                 }
-            }
-        }
-
-        private void CreateDictionary()
-        {
-            for (int index = 0; index < NumberOfCells; index++)
-            {
-                int row = index / BoardSize;
-                int column = (index - row * BoardSize) % BoardSize;
-                Cell cell = Cells[row, column];
-                cell.RenderUiBox();
-                CellsDictionary.Add((row, column), cell);
             }
         }
 
@@ -144,29 +125,30 @@ namespace Minesweeper.Core.Entities
             if (userPlay.IsGuess)
             {
                 cell.MarkAsGuess();
-                return new UserPlayResult(true, GameStateEnum.StillAlive);
+                return new UserPlayResult(true, GameStateEnum.StillAlive, new List<Cell>(0));
             }
             else
             {
                 InclementNumberOfExposedCells(cell);
                 cell.MarkAsExposed();
+                var affectedCells = new List<Cell>(0);
 
                 switch (cell.CellType)
                 {
                     case CellTypeEnum.Bomb:
-                        return new UserPlayResult(false, GameStateEnum.GameOver);
+                        return new UserPlayResult(false, GameStateEnum.GameOver, new List<Cell>(0));
 
                     case CellTypeEnum.Blank:
-                        ExpandBlankRegion(cell);
+                        ExpandBlankRegion(cell, out affectedCells);
                         break;
                 }
 
                 if (NumberOfExposedCells == NumberOfCells - NumberOfBombs)
                 {
-                    return new UserPlayResult(true, GameStateEnum.Won);
+                    return new UserPlayResult(true, GameStateEnum.Won, affectedCells);
                 }
 
-                return new UserPlayResult(true, GameStateEnum.StillAlive);
+                return new UserPlayResult(true, GameStateEnum.StillAlive, affectedCells);
             }
         }
 
@@ -174,8 +156,9 @@ namespace Minesweeper.Core.Entities
         /// Expose blank cells until reach numbered cells
         /// </summary>
         /// <param name="cell"></param>
-        public void ExpandBlankRegion(Cell cell)
+        public void ExpandBlankRegion(Cell cell, out List<Cell> affectedCells)
         {
+            affectedCells = new List<Cell>();
             Queue<Cell> queueOfCellstoExplore = new();
             queueOfCellstoExplore.Enqueue(cell);
 
@@ -191,6 +174,7 @@ namespace Minesweeper.Core.Entities
                     if (Cell.IsNeighborInBounds(BoardSize, neighborRow, neighborColumn))
                     {
                         Cell neighbor = Cells[neighborRow, neighborColumn];
+                        affectedCells.Add(neighbor);
 
                         //If is a blank cell adds it to the queue of cells to be expanded
                         if (neighbor.CellType == CellTypeEnum.Blank && !neighbor.IsExposed)

@@ -7,14 +7,19 @@ namespace Minesweeper.Game
 {
     public class CellUI
     {
-        public const int CELL_SIZE = 32;
-        public const int RECTANGLE_SIZE = 32;
-
         public CellUI(int row, int column, Texture texture)
         {
-            Cell = new Cell(row, column, texture);
+            Cell = new Cell(row, column);
             Texture = texture;
-            Position = new Vector2f(column * CELL_SIZE, row * CELL_SIZE);
+            Position = new Vector2f(column * GameConstants.CELL_SIZE, row * GameConstants.CELL_SIZE);
+            UIBox = new RectangleShape();
+        }
+
+        public CellUI(Cell cell, Texture texture)
+        {
+            Cell = cell;
+            Texture = texture;
+            Position = new Vector2f(cell.Column * GameConstants.CELL_SIZE, cell.Row * GameConstants.CELL_SIZE);
             UIBox = new RectangleShape();
         }
 
@@ -24,25 +29,36 @@ namespace Minesweeper.Game
         public IntRect Rect { get; private set; }
         protected Vector2f Position { get; private set; }
 
-        public void RenderUiBox()
+        /// <summary>
+        /// Creates the necessary UI objects to render a Cell
+        /// </summary>
+        public void CreateUiBox()
         {
-            UIBox = new RectangleShape(new Vector2f(CELL_SIZE, CELL_SIZE))
+            UIBox = new RectangleShape(new Vector2f(GameConstants.CELL_SIZE, GameConstants.CELL_SIZE))
             {
                 Texture = Texture,
                 Position = Position,
                 TextureRect = CreateTextureRect()
             };
 
-            int leftPadding = 100; //This is the result of: GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2;
-            int topPadding = 40; //This is the result of: GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2;
+            int leftPadding = GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2;
+            int topPadding = GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2;
 
-            Rect = new IntRect(leftPadding + (int)Position.X, topPadding + (int)Position.Y, CELL_SIZE, CELL_SIZE);
+            Rect = new IntRect(leftPadding + (int)Position.X, topPadding + (int)Position.Y, GameConstants.CELL_SIZE, GameConstants.CELL_SIZE);
+        }
+
+        /// <summary>
+        /// Renders the Cell again after any event
+        /// </summary>
+        public void ReRenderCell()
+        {
+            UIBox.TextureRect = CreateTextureRect();
         }
 
         private IntRect CreateTextureRect()
         {
             (int left, int top) = GetLeftAndTopForUIRender();
-            return new IntRect(left, top, RECTANGLE_SIZE, RECTANGLE_SIZE);
+            return new IntRect(left, top, GameConstants.RECTANGLE_SIZE, GameConstants.RECTANGLE_SIZE);
         }
 
         /// <summary>

@@ -1,21 +1,14 @@
 ﻿using Minesweeper.Core.Enums;
 using Minesweeper.Core.ValueObjects;
-using SFML.Graphics;
-using SFML.System;
 
 namespace Minesweeper.Core
 {
     public class Cell
     {
-        public const int CELL_SIZE = 32;
-        public const int RECTANGLE_SIZE = 32;
-
-        public Cell(int row, int column, Texture? texture)
+        public Cell(int row, int column)
         {
             Row = row;
             Column = column;
-            Texture = texture;
-            Position = new Vector2f(Column * CELL_SIZE, Row * CELL_SIZE);
         }
 
         public int Row { get; private set; }
@@ -26,12 +19,6 @@ namespace Minesweeper.Core
         public int NumberOfSurroudingBombs { get; private set; }
         public bool IsBomb { get; private set; }
 
-        // ui
-        public Vector2f Position { get; private set; }
-        public RectangleShape UIBox { get; private set; }
-        public Texture Texture { get; private set; }
-        public IntRect Rect { get; private set; }
-
         public void SetIsBomb()
         {
             IsBomb = true;
@@ -41,41 +28,16 @@ namespace Minesweeper.Core
         {
             Row = newRow;
             Column = newColumn;
-
-            Position = new Vector2f(Column * CELL_SIZE, Row * CELL_SIZE);
-        }
-
-        public void RenderUiBox()
-        {
-            UIBox = new RectangleShape(new Vector2f(CELL_SIZE, CELL_SIZE))
-            {
-                Texture = Texture,
-                Position = Position,
-                TextureRect = CreateTextureRect()
-            };
-
-            int leftPadding = 100; //This is the result of: GameConstants.WINDOW_WIDTH / 2 - GameConstants.BOARD_WIDTH / 2;
-            int topPadding = 40; //This is the result of: GameConstants.WINDOW_HEIGHT / 2 - GameConstants.BOARD_HEIGHT / 2;
-
-            Rect = new IntRect(leftPadding + (int)Position.X, topPadding + (int)Position.Y, CELL_SIZE, CELL_SIZE);
-        }
-
-        private IntRect CreateTextureRect()
-        {
-            (int left, int top) = GetLeftAndTopForUIRender();
-            return new IntRect(left, top, RECTANGLE_SIZE, RECTANGLE_SIZE);
         }
 
         public void MarkAsExposed()
         {
             IsExposed = true;
-            UIBox.TextureRect = CreateTextureRect();
         }
 
         public void MarkAsGuess()
         {
             IsGuess = !IsGuess;
-            UIBox.TextureRect = CreateTextureRect();
         }
 
         public void IncreaseNumberOfSurroudingBombs()
@@ -108,29 +70,6 @@ namespace Minesweeper.Core
             CellTypeEnum.Bomb => "*",
             _ => string.Empty
         };
-
-        /// <summary>
-        /// Get the pixels from the top and left of the Asset image gaming_SpriteSheet.png to render the correct image for the type of cell
-        /// </summary>
-        /// <returns></returns>
-        private (int left, int top) GetLeftAndTopForUIRender()
-        {
-            if (!IsExposed && IsGuess)
-                return (96, 64);
-
-            if (!IsExposed)
-                return (32, 64);
-
-            int top = Math.DivRem(NumberOfSurroudingBombs, 4, out int left);
-
-            return CellType switch
-            {
-                CellTypeEnum.Blank => (0, 0),
-                CellTypeEnum.Number => (left * 32, top * 32),
-                CellTypeEnum.Bomb => (64, 64),
-                _ => (32, 64)
-            };
-        }
 
         /// <summary>
         /// Check if a neighbor of a cell is inside the bounds of the 2D array

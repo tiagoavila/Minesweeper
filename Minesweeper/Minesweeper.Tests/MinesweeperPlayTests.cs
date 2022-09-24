@@ -5,7 +5,7 @@ namespace Minesweeper.Tests
 {
     public class MinesweeperPlayTests
     {
-        private readonly Board board = new(_boardSize, _numberOfBombs, null);
+        private readonly Board board = new(_boardSize, _numberOfBombs);
         private const int _boardSize = 8;
         private const int _numberOfBombs = 10;
 

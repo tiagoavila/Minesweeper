@@ -1,16 +1,14 @@
-﻿using Minesweeper.Core;
-using Minesweeper.Core.Entities;
+﻿using Minesweeper.Core.Entities;
 using SFML.Audio;
 using SFML.Graphics;
 using SFML.System;
-using System.Data.Common;
 
 namespace Minesweeper.Game
 {
     public class Game
     {
-        private readonly Board _boardEngine;
-        private readonly Sprite _boardUI;
+        private readonly BoardUI _boardUI;
+        private readonly Sprite _boardSprite;
         private readonly Sprite _gameOverMessage;
         private readonly Sprite _youWonMessage;
         private readonly RenderTexture renderTexture = new(GameConstants.BOARD_WIDTH, GameConstants.BOARD_HEIGHT);
@@ -29,10 +27,10 @@ namespace Minesweeper.Game
         {
             Texture texture = new("Assets/gaming_SpriteSheet.png");
 
-            _boardEngine = new Board(GameConstants.BOARD_SIZE, GameConstants.NUMBER_OF_BOMBS, texture);
-            _boardEngine.InitializeBoard();
+            _boardUI = new BoardUI(GameConstants.BOARD_SIZE, GameConstants.NUMBER_OF_BOMBS, texture);
+            _boardUI.InitializeBoardUI();
 
-            _boardUI = new Sprite(renderTexture.Texture)
+            _boardSprite = new Sprite(renderTexture.Texture)
             {
                 Position = new Vector2f(_leftPadding, _topPadding)
             };
@@ -62,72 +60,88 @@ namespace Minesweeper.Game
         {
             renderTexture.Clear();
 
-            foreach (var key in _boardEngine.CellsDictionary.Keys)
+            foreach (var key in _boardUI.CellsDictionary.Keys)
             {
-                renderTexture.Draw(_boardEngine.CellsDictionary[key].UIBox);
+                renderTexture.Draw(_boardUI.CellsDictionary[key].UIBox);
             }
 
             if (isLose)
             {
                 renderTexture.Draw(_gameOverMessage);
-            } 
+            }
             else if (isWon)
             {
                 renderTexture.Draw(_youWonMessage);
             }
 
             renderTexture.Display();
-            window.Draw(_boardUI);
+            window.Draw(_boardSprite);
         }
 
         public void Update(Vector2i mouseCoords)
         {
-            int row = Math.DivRem(mouseCoords.Y - _topPadding, 32, out int _);
-            int column = Math.DivRem(mouseCoords.X - _leftPadding, 32, out int _);
+            int row = Math.DivRem(mouseCoords.Y - _topPadding, GameConstants.CELL_SIZE, out int _);
+            int column = Math.DivRem(mouseCoords.X - _leftPadding, GameConstants.CELL_SIZE, out int _);
 
-            if (_boardEngine.CellsDictionary.TryGetValue((row, column), out Cell cell))
+            if (_boardUI.CellsDictionary.TryGetValue((row, column), out CellUI cellUI))
             {
                 if (LeftClick)
                 {
-                    HandleLeftCLick(cell);
-                } 
+                    HandleLeftCLick(cellUI);
+                }
                 else if (RightClick)
                 {
-                   HandleRightCLick(cell);
+                    HandleRightCLick(cellUI);
                 }
             }
         }
 
-        private void HandleLeftCLick(Cell cell)
+        private void HandleLeftCLick(CellUI cellUI)
         {
             LeftClick = false;
 
-            UserPlayResult userPlayResult = _boardEngine.Play(new UserPlay(cell.Row, cell.Column, false));
+            UserPlayResult userPlayResult = _boardUI.BoardEngine.Play(new UserPlay(cellUI.Cell.Row, cellUI.Cell.Column, false));
             if (userPlayResult != null && userPlayResult.IsSuccessful)
             {
+                cellUI.ReRenderCell();
+
+                //To re-render the cells exposed on a click on a blank cell
+                if (userPlayResult.ResultingGameState == Core.Enums.GameStateEnum.StillAlive)
+                {
+                    foreach (var affectedCell in userPlayResult.AffectedCells)
+                    {
+                        if (_boardUI.CellsDictionary.TryGetValue((affectedCell.Row, affectedCell.Column), out CellUI cellUIToReRender))
+                        {
+                            cellUIToReRender.ReRenderCell();
+                        }
+                    }
+                }
+
                 if (userPlayResult.ResultingGameState == Core.Enums.GameStateEnum.Won)
                 {
                     isWon = true;
-                    _boardEngine.ExposeAllCells();
+                    _boardUI.ExposeAllCellsAndReRender();
                     _winningMusicPlayer.Play();
                 }
             }
             else
             {
-                _boardEngine.ExposeAllCells();
+                cellUI.ReRenderCell();
+                _boardUI.ExposeAllCellsAndReRender();
                 isLose = true;
 
                 _losingMusicPlayer.Play();
             }
         }
 
-        private void HandleRightCLick(Cell cell)
+        private void HandleRightCLick(CellUI cellUI)
         {
             RightClick = false;
 
-            if (!cell.IsExposed)
+            if (!cellUI.Cell.IsExposed)
             {
-                _boardEngine.Play(new UserPlay(cell.Row, cell.Column, true));
+                _boardUI.BoardEngine.Play(new UserPlay(cellUI.Cell.Row, cellUI.Cell.Column, true));
+                cellUI.ReRenderCell();
             }
         }
     }
